@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Açık Yol</title>
+<meta name="description" content="Açık Yol: tarayıcıda oynanan 3B araba oyunu. Şehir, otoyollar, tüneller, viyadükler ve altın jetonlar.">
+<meta name="theme-color" content="#0c1015">
+<meta property="og:title" content="Açık Yol">
+<meta property="og:description" content="Tarayıcıda oynanan 3B araba oyunu. Gel, bir tur at!">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://yusufalpuzunal.github.io/Araba/onizleme.png">
+<meta property="og:url" content="https://yusufalpuzunal.github.io/Araba/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div class="hud" id="hud" hidden>
+  <div class="hud-top">
+    <div class="plate"><div class="car" id="hudCar">—</div><div class="coins" id="hudCoins">JETON 0</div></div>
+    <div class="right-stack">
+      <canvas id="mini" width="264" height="264"></canvas>
+      <div class="tools">
+        <button id="tCam" type="button">Kamera</button>
+        <button id="tLights" type="button" aria-pressed="false">Far</button>
+        <button id="tNight" type="button">Gece</button>
+        <button id="tReset" type="button">Kaldır</button>
+        <button id="tSound" type="button" aria-pressed="true">Ses</button>
+        <button id="tRestart" type="button" hidden>Yeniden</button>
+        <button id="tMenu" type="button">Garaj</button>
+      </div>
+    </div>
+  </div>
+  <div id="race" class="race" hidden>
+    <div><small>SÜRE</small><b id="rTime">0:00.00</b></div>
+    <div><small>REKOR</small><b id="rBest">—</b></div>
+    <div><small>KONTROL</small><b id="rCp">0/0</b></div>
+  </div>
+  <div id="toast" class="off"></div>
+  <div class="cluster">
+    <svg viewBox="0 0 168 168" aria-hidden="true">
+      <circle cx="84" cy="84" r="70" fill="rgba(13,17,23,.78)" stroke="rgba(226,234,242,.16)"/>
+      <circle cx="84" cy="84" r="62" fill="none" stroke="rgba(226,234,242,.14)" stroke-width="7" stroke-dasharray="292.2 400" transform="rotate(135 84 84)" stroke-linecap="round"/>
+      <circle cx="84" cy="84" r="62" fill="none" stroke="#ff5240" stroke-width="7" stroke-dasharray="0 73 29 400" transform="rotate(135 84 84)" opacity=".55" id="redzone"/>
+      <circle id="rpmArc" cx="84" cy="84" r="62" fill="none" stroke="#ffb22e" stroke-width="7" stroke-dasharray="0 400" transform="rotate(135 84 84)" stroke-linecap="round"/>
+    </svg>
+    <div class="spd"><b id="spd">0</b><small>KM/SA</small><i id="gear">1</i></div>
+    <div class="tells"><span id="tHead">FAR</span><span id="tBrk">FREN</span></div>
+  </div>
+</div>
+
+<div class="touch" id="touch" hidden>
+  <div id="wheel" role="slider" aria-label="Direksiyon"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="rgba(13,17,23,.62)" stroke="#dfe4ec" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="1.5" stroke-dasharray="2 4"/><path d="M50 50L10 60M50 50L90 60M50 50V91" stroke="#dfe4ec" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="50" r="12" fill="#dfe4ec"/><circle cx="50" cy="50" r="5" fill="#ffb22e"/><rect x="45" y="3" width="10" height="14" rx="3" fill="#ffb22e"/></svg></div>
+  <div class="pedals">
+    <button id="bHand" type="button">EL FRENİ</button>
+    <button id="bBrake" type="button">FREN</button>
+    <button id="bGas" type="button">GAZ</button>
+  </div>
+</div>
+
+<div class="menu" id="menu" hidden>
+  <div class="panel">
+    <div class="brand"><h1>AÇIK<span> YOL</span></h1><p>Şehir, otoyollar, tüneller ve dağ yolları.</p></div>
+    <div class="sec">
+      <div class="label">Araç <span id="carCount"></span></div>
+      <div class="carousel">
+        <button class="nav" id="carPrev" type="button" aria-label="Önceki araç">‹</button>
+        <div class="carview" id="carView"><div class="track" id="carTrack"></div></div>
+        <button class="nav" id="carNext" type="button" aria-label="Sonraki araç">›</button>
+      </div>
+      <div class="dots" id="carDots"></div>
+    </div>
+    <div class="sec"><div class="label">Boya</div><div class="paints" id="paints"></div></div>
+    <div class="sec"><div class="label">Mod</div><div class="seg" id="modes"></div><div class="modeinfo" id="modeInfo"></div></div>
+    <div class="sec row">
+      <div class="seg"><button id="mDay" type="button" aria-pressed="true">Gündüz</button><button id="mNight" type="button" aria-pressed="false">Gece</button></div>
+      <button id="mMusic" class="tog" type="button" aria-pressed="true">♪ Müzik</button>
+    </div>
+    <button id="go" type="button">Sürmeye başla</button>
+    <div class="foot">
+      <button id="helpBtn" class="linkbtn" type="button">Kontroller</button>
+      <button id="resetSave" class="linkbtn" type="button">İlerlemeyi sıfırla</button>
+      <span class="fine">Araçlar ve dükkanlar bu oyun için uydurulmuştur.</span>
+    </div>
+  </div>
+  <div class="helppop" id="helpPop" hidden><div class="helpcard"><div class="help" id="help"></div><button id="helpClose" type="button">Tamam</button></div></div>
+</div>
+
+<div id="loading">Dünya hazırlanıyor…</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/world-data.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/textures.js"></script>
+<script src="js/world.js"></script>
+<script src="js/vegetation.js"></script>
+<script src="js/car-body.js"></script>
+<script src="js/car-model.js"></script>
+<script src="js/physics.js"></script>
+<script src="js/traffic.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/input.js"></script>
+<script src="js/race.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
